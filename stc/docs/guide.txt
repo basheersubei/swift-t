@@ -228,7 +228,7 @@ external application programs.
 In typical Swift programs, leaf functions do the computational
 heavy-lifting, while Swift code provides the "glue" to compose
 leaf functions into a complete application.
-From the perspective of the Swift programmer, leaf functions
+From the perspective of the Swift programmer, leaf functions are
 atomic operations that wait for input variables and set output
 variables.
 
@@ -373,7 +373,7 @@ are set, allowing +r()+ to run.
 
 Variables may be assigned only once.  Multiple assignment is often
 detected at compile time, and will always be detected at run time,
-resulting in a run time error.  If variable is not assigned,
+resulting in a run time error.  If a variable is not assigned,
 expressions that depend on the variable cannot execute.  If the variable
 is never assigned during the course of program execution, these
 expressions will never execute.  Upon program completion, Swift/T will
@@ -748,7 +748,7 @@ global scope and can be used anywhere
 Swift supports a basic feature for defining globally visible constants.
 
 You can use global variables to define program-wide constants: the
-single assignment semantics of Swift mean that they variables cannot
+single assignment semantics of Swift mean that the variables cannot
 be reassigned elsewhere in the program.
 
 ----
