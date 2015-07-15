@@ -14,6 +14,7 @@ import exm.stc.common.exceptions.UserException;
 import exm.stc.common.lang.FnID;
 import exm.stc.common.lang.ForeignFunctions;
 import exm.stc.common.util.StackLite;
+import exm.stc.common.Settings;
 import exm.stc.ic.opt.TreeWalk.TreeWalker;
 import exm.stc.ic.tree.ICInstructions.Builtin;
 import exm.stc.ic.tree.ICInstructions.CommonFunctionCall;
@@ -35,7 +36,7 @@ public class PruneFunctions implements OptimizerPass {
 
   @Override
   public String getConfigEnabledKey() {
-    return null;
+    return Settings.OPT_FUNCTION_PRUNE;
   }
 
   @Override

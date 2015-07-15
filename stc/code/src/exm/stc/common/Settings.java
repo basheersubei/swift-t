@@ -74,6 +74,9 @@ public class Settings {
 
   public static final String OPT_FUNCTION_SIGNATURE =
                               "stc.opt.function-signature";
+
+  public static final String OPT_FUNCTION_PRUNE = "stc.opt.function-prune";
+
   public static final String OPT_DISABLE_ASSERTS = "stc.opt.disable-asserts";
   /* Master switch for loop unrolling pass.  At minimum manually
    * annotated loops are unrolled */
@@ -189,6 +192,7 @@ public class Settings {
     defaults.setProperty(OPT_FUNCTION_ALWAYS_INLINE_THRESHOLD,
               Long.toString(FUNCTION_ALWAYS_INLINE_THRESHOLD_DEFAULT));
     defaults.setProperty(OPT_FUNCTION_SIGNATURE, "true");
+    defaults.setProperty(OPT_FUNCTION_PRUNE, "true");
     defaults.setProperty(OPT_HOIST, "true");
     defaults.setProperty(OPT_REORDER_INSTS, "false");
     defaults.setProperty(OPT_ARRAY_BUILD, "true");
@@ -325,6 +329,7 @@ public class Settings {
     getBoolean(OPT_PIPELINE);
     getBoolean(OPT_CONTROLFLOW_FUSION);
     getBoolean(OPT_FUNCTION_SIGNATURE);
+    getBoolean(OPT_FUNCTION_PRUNE);
     getBoolean(OPT_HOIST);
     getBoolean(OPT_REORDER_INSTS);
     getBoolean(OPT_UNROLL_LOOPS);

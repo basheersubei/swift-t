@@ -22,7 +22,7 @@ source "$STC_HOME/scripts/stc-config.sh"
 
 
 COMPILER_OPTS=()
-O0_OPTS=()
+O0_OPTS=("function-prune")
 O1_OPTS=("constant-fold" "dead-code-elim" "value-number" "algebra"
          "finalized-var"
          "flatten-nested" "shared-constants" "demote-globals" "unroll-loops"
@@ -94,6 +94,9 @@ function get_compiler_opt_name() {
                     return 0;
                     ;;
         function-signature) echo "stc.opt.function-signature"
+                    return 0;
+                    ;;
+        function-prune) echo "stc.opt.function-prune"
                     return 0;
                     ;;
         hoisting) echo "stc.opt.hoist"
@@ -296,7 +299,7 @@ report_version()
 # Set default options before processing args
 set_opt_level 2
 
-while getopts "A:C:d:D:Ef:F:hI:j:L:pO:o:r:uvVx" OPTION
+while getopts "A:C:d:D:Ef:F:hI:j:L:pO:o:r:uvVx:c" OPTION
 do
   case ${OPTION}
     in
@@ -356,6 +359,11 @@ do
     x)
       echo "Under construction"
       return ${EXIT_ERROR_SCRIPT}
+      ;;
+    c)
+      # so far only disables function pruning
+      echo "Object-file mode: TURNOFF: function-prune"
+      disable_opt function-prune
       ;;
     *)
       # getopts already printed an error message
