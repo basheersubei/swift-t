@@ -183,8 +183,8 @@ public class FunctionInline implements OptimizerPass {
       if (f.id().equals(FnID.ENTRY_FUNCTION)) {
         // Do nothing
       } else if (callLocs == null || callLocs.size() == 0) {
-        // Function not referenced - prune it!
-        toRemove.add(f.id());
+        // Function not referenced - don't prune it! OPT_FUNCTION_PRUNE will do that
+        // Do nothing
       } else if (callLocs.size() == 1 && !callLocs.get(0).equals(f.id())) {
         // Always inline functions that were only called once
         alwaysInline.add(f.id());
