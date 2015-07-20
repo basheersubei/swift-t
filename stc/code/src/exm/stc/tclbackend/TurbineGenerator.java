@@ -304,6 +304,9 @@ public class TurbineGenerator implements CompilerBackend {
     this.options = options;
     this.foreignFuncs = foreignFuncs;
 
+    // if REPL_MODE is true, don't generate headers. Just leave.
+    if (Settings.getBooleanUnchecked(Settings.REPL_MODE)) return;
+
     //String[] rpaths = Settings.getRpaths();
     File input_file   = new File(Settings.get(Settings.INPUT_FILENAME));
     File output_file  = new File(Settings.get(Settings.OUTPUT_FILENAME));
@@ -355,33 +358,42 @@ public class TurbineGenerator implements CompilerBackend {
   }
 
   private void turbineStartup() {
-    // TODO: don't need defaults anymore with newer Turbine engines,
+    // if not in REPL_MODE, generate Turbine as usual
+    if (!Settings.getBooleanUnchecked(Settings.REPL_MODE)) {
+			
+	// TODO: don't need defaults anymore with newer Turbine engines,
     //       remove once we move to new version.
-    tree.add(new Command("turbine::defaults"));
-    tree.add(initCustomWorkTypes());
-    tree.add(new Command("turbine::init $servers \"Swift\""));
-    tree.add(checkWorkTypes());
+      tree.add(new Command("turbine::defaults"));
+      tree.add(initCustomWorkTypes());
+      tree.add(new Command("turbine::init $servers \"Swift\""));
+      tree.add(checkWorkTypes());
+      
+      if (Settings.getBooleanUnchecked(Settings.ENABLE_REFCOUNTING)) {
+        tree.add(Turbine.enableReferenceCounting());
+      }
 
-    if (Settings.getBooleanUnchecked(Settings.ENABLE_REFCOUNTING)) {
-      tree.add(Turbine.enableReferenceCounting());
+      // Initialize struct types
+      tree.append(structTypeDeclarations());
+
+      // Insert code to check versions
+      tree.add(Turbine.checkConstants());
+
+      tree.append(compileTimeArgs());
+
+      tree.add(initGlobalVars());
+
+      // Global vars need to be allocated debug symbols
+      tree.append(debugSymbolInit());
+
+      tree.add(new Command("turbine::start " + ENTRY_FUNCTION_NAME +
+          " " + CONSTINIT_FUNCTION_NAME));
+      tree.add(new Command("turbine::finalize"));
+
+      // if in REPL_MODE, don't generate boilerplate code
+    } else {
+      tree.add(initGlobalVars());
     }
 
-    // Initialize struct types
-    tree.append(structTypeDeclarations());
-
-    // Insert code to check versions
-    tree.add(Turbine.checkConstants());
-
-    tree.append(compileTimeArgs());
-
-    tree.add(initGlobalVars());
-
-    // Global vars need to be allocated debug symbols
-    tree.append(debugSymbolInit());
-
-    tree.add(new Command("turbine::start " + ENTRY_FUNCTION_NAME +
-                                        " " + CONSTINIT_FUNCTION_NAME));
-    tree.add(new Command("turbine::finalize"));
   }
 
   /**

@@ -364,6 +364,7 @@ do
       # so far only disables function pruning
       echo "Object-file mode: TURNOFF: function-prune"
       disable_opt function-prune
+      COMPILER_OPTS+="-Dstc.repl_mode=true"
       ;;
     *)
       # getopts already printed an error message

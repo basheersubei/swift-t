@@ -129,6 +129,9 @@ public class Settings {
   /** Run compiler repeatedly so can be profiled */
   public static final String PROFILE_STC = "stc.profile";
 
+  /** Only compile partially, to be used with REPL mode **/
+  public static final String REPL_MODE = "stc.repl_mode";
+  
   public static final String USE_C_PREPROCESSOR = "stc.c_preprocess";
   public static final String PREPROCESS_ONLY = "stc.preprocess_only";
   public static final String PREPROCESSOR_FORCE_GCC = "stc.preproc.force-gcc";
@@ -159,6 +162,7 @@ public class Settings {
     defaults.setProperty(STC_HOME, "");
     defaults.setProperty(TURBINE_HOME, "");
     defaults.setProperty(COMPILER_DEBUG, "true");
+    defaults.setProperty(REPL_MODE, "false");
     defaults.setProperty(USE_C_PREPROCESSOR, "false");
     defaults.setProperty(PREPROCESS_ONLY, "false");
     defaults.setProperty(PREPROCESSOR_FORCE_CPP, "false");
@@ -352,6 +356,7 @@ public class Settings {
     getBoolean(AUTO_DECLARE);
     getBoolean(COMPILER_DEBUG);
     getBoolean(PROFILE_STC);
+    getBoolean(REPL_MODE);
     getBoolean(USE_C_PREPROCESSOR);
     getBoolean(PREPROCESS_ONLY);
     getBoolean(PREPROCESSOR_FORCE_CPP);
