@@ -125,15 +125,12 @@ public class FunctionInline implements OptimizerPass {
 
       pruneBuiltins(logger, program, finder);
 
-      Pair<ListMultimap<FnID, FnID>, Set<FnID>> actions =
-                               selectInlineFunctions(program, finder);
-      ListMultimap<FnID, FnID> inlineLocations = actions.val1;
-      Set<FnID> toRemove = actions.val2;
+      ListMultimap<FnID, FnID> inlineLocations = 
+          selectInlineFunctions(program, finder);
 
       logger.debug("Inline locs: " + inlineLocations.toString());
-      logger.debug("Functions to prune: " + toRemove.toString());
 
-      changed = doInlining(logger, program, inlineLocations, toRemove);
+      changed = doInlining(logger, program, inlineLocations);
       logger.debug("changed=" + changed);
       i++;
     } while (changed && i < MAX_ITERS_PER_PASS);
@@ -163,7 +160,7 @@ public class FunctionInline implements OptimizerPass {
    * @return Map of function -> caller functions determining which calls
    *        to inline
    */
-  private Pair<ListMultimap<FnID, FnID>, Set<FnID>> selectInlineFunctions(
+  private ListMultimap<FnID, FnID> selectInlineFunctions(
       Program program, FuncCallFinder finder) {
 
     // Map from caller to callee for IC functions only
@@ -175,7 +172,6 @@ public class FunctionInline implements OptimizerPass {
     }
 
     ListMultimap<FnID, FnID> inlineCandidates = ArrayListMultimap.create();
-    Set<FnID> toRemove = new HashSet<FnID>();
     // Narrow inline candidates by number of calls, remove unused functions
     for (Function f: program.functions()) {
       List<FnID> callLocs = finder.functionUsages.get(f.id());
@@ -199,26 +195,25 @@ public class FunctionInline implements OptimizerPass {
       }
     }
 
-    inlineCandidates = findCycleFree(inlineCandidates, toRemove);
+    inlineCandidates = findCycleFree(inlineCandidates);
 
-    return Pair.create(inlineCandidates, toRemove);
+    return inlineCandidates;
   }
 
   private ListMultimap<FnID, FnID> findCycleFree(
-      ListMultimap<FnID, FnID> inlineCandidates,
-          Set<FnID> toRemove) {
+      ListMultimap<FnID, FnID> inlineCandidates) {
     ListMultimap<FnID, FnID> inlineCandidates2 = ArrayListMultimap.create();
     // remove any loops in inlining
     Set<FnID> visited = new HashSet<FnID>();
     // Start from alwaysInline functions so that they aren't the bit we have
     // to break in circular loop
     for (FnID toInline: alwaysInline) {
-      findCycleFreeRec(inlineCandidates, visited, toRemove,
+      findCycleFreeRec(inlineCandidates, visited,
               inlineCandidates2, new StackLite<FnID>(), toInline);
     }
     // Now process remaining functions
     for (FnID toInline: inlineCandidates.keySet()) {
-      findCycleFreeRec(inlineCandidates, visited, toRemove,
+      findCycleFreeRec(inlineCandidates, visited,
               inlineCandidates2, new StackLite<FnID>(), toInline);
     }
     return inlineCandidates2;
@@ -227,8 +222,7 @@ public class FunctionInline implements OptimizerPass {
   /**
    */
   private void findCycleFreeRec(ListMultimap<FnID, FnID> candidates,
-      Set<FnID> visited, Set<FnID> toRemove,
-      ListMultimap<FnID, FnID> newCandidates,
+      Set<FnID> visited, ListMultimap<FnID, FnID> newCandidates,
       StackLite<FnID> callStack, FnID curr) {
     List<FnID> callers = candidates.get(curr);
     if (callers == null || callers.size() == 0) {
@@ -254,7 +248,7 @@ public class FunctionInline implements OptimizerPass {
         newCandidates.put(curr, caller);
 
         callStack.push(curr);
-        findCycleFreeRec(candidates, visited, toRemove, newCandidates, callStack,
+        findCycleFreeRec(candidates, visited, newCandidates, callStack,
                         caller);
         callStack.pop();
       }
@@ -262,7 +256,7 @@ public class FunctionInline implements OptimizerPass {
   }
 
   private boolean doInlining(Logger logger, Program program,
-      ListMultimap<FnID, FnID> inlineLocations, Set<FnID> toRemove) {
+      ListMultimap<FnID, FnID> inlineLocations) {
     boolean changed = false;
     // Functions that will be inlined
     Map<FnID, Function> toInline = new HashMap<FnID, Function>();
@@ -272,10 +266,6 @@ public class FunctionInline implements OptimizerPass {
     while (functionIter.hasNext()) {
       Function f = functionIter.next();
       List<FnID> occurrences = inlineLocations.get(f.id());
-      if (toRemove.contains(f.id())) {
-        changed = true;
-        functionIter.remove();
-      }
       if (occurrences != null && occurrences.size() > 0) {
         changed = true;
         toInline.put(f.id(), f);
