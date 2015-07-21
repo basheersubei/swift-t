@@ -3215,9 +3215,15 @@ public class TurbineGenerator implements CompilerBackend {
         createArgs.add(createArgs(decl.var, decl.initReaders, decl.initWriters));
       }
     }
-
-    commands.add(Turbine.batchDeclareGlobals(varNames, createArgs));
-
+    
+    // if REPL_MODE, use adlb::multicreate instead of adlb::create_globals
+    if (Settings.getBooleanUnchecked(Settings.REPL_MODE)) {
+      commands.add(Turbine.batchDeclare(varNames, createArgs));
+    // else, continue as normal (using create_globals)
+    } else {
+      commands.add(Turbine.batchDeclareGlobals(varNames, createArgs));
+    }
+    
     commands.add(Turbine.batchDeclareGlobalFiles(fileVarNames, fileCreateArgs,
                                                  isMapped));
 
