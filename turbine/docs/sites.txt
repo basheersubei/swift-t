@@ -348,14 +348,15 @@ Midway is a mid-sized SLURM cluster at the University of Chicago
 
 ==== Public installation
 
-*As of:* 0.2.1 - 02/11/2013
+*As of:* master - 07/17/2015
 
-* STC: +~wozniak/Public/stc-0.0.3/bin/stc+
+* STC: +~wozniak/Public/sfw/compute/gcc/stc/bin+
+* Turbine: +~wozniak/Public/sfw/compute/gcc/turbine/bin+
 
 To run:
 
 ----
-srun ~wozniak/Public/turbine-0.1.1/scripts/submit/slurm/turbine-slurm.sh -n 3 ~/program.tic
+swift-t -m slurm -n 2 program.swift
 ----
 
 ==== Build procedure
@@ -696,7 +697,7 @@ These environment variables may be placed in your +-s+
 
 ==== Build procedure
 
-*As of:* 8/27/2014
+*As of:* 7/23/2015
 
 Cray systems do not use +mpicc+.  We set +CC=gcc+ and use compiler
 flags to configure the MPI library.
@@ -932,17 +933,15 @@ flags to configure the MPI library.
 * Configure ADLB with:
 +
 ----
-./configure --prefix=/path/to/lb --with-c-utils=/path/to/c-utils
-CC=gcc
-CFLAGS=-I/opt/cray/mpt/default/gni/mpich2-gnu/47/include
-LDFLAGS="-L/opt/cray/mpt/default/gni/mpich2-gnu/47/lib -lmpich"
---enable-mpi-2
+$ export CFLAGS=-I/opt/cray/mpt/default/gni/mpich2-gnu/49/include
+$ export LDFLAGS="-L/opt/cray/mpt/default/gni/mpich2-gnu/49/lib -lmpich"
+$ ./configure --prefix=/path/to/lb --with-c-utils=/path/to/c-utils CC=gcc --enable-mpi-2
 ----
 +
 * In the Turbine configure step, replace the +--with-mpi+ option with:
 +
 ----
---enable-custom-mpi --with-mpi=/opt/cray/mpt/default/gni/mpich2-gnu/47
+--enable-custom-mpi --with-mpi=/opt/cray/mpt/default/gni/mpich2-gnu/49
 ----
 
 ==== Build procedure with MPE

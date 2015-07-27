@@ -20,7 +20,7 @@ AC_INIT([Turbine], [turbine_version()], [wozniak@mcs.anl.gov])
 AC_CONFIG_SRCDIR([src/turbine/turbine.c])
 AC_CONFIG_HEADERS([config.h])
 
-m4_include([m4/ifblank.m4])
+m4_include([../../dev/m4/ifblank.m4])
 
 TURBINE_VERSION=turbine_version()
 AC_MSG_RESULT([Turbine version: ${TURBINE_VERSION}])
@@ -81,12 +81,11 @@ AC_PATH_PROG([SWIG],[swig],[0])
 # broken location for --with-zlib, it will find a different one!
 # This is problematic on cross-compiled systems (like BG/Q).
 ENABLE_ZLIB=0
-m4_include([m4/ax_check_zlib.m4])
+m4_include([../../dev/m4/ax_check_zlib.m4])
 AX_CHECK_ZLIB([ENABLE_ZLIB=1],
    AC_MSG_ERROR([Could not find zlib: use --with-zlib or --without-zlib.
                  Note that Swift/Turbine checkpointing and HDF
                  both require zlib and can both be disabled.]))
-CFLAGS="${CFLAGS} -I${ZLIB_HOME}/include"
 AC_SUBST(ZLIB_HOME)
 AC_SUBST(ENABLE_ZLIB)
 
@@ -586,10 +585,7 @@ fi
 AC_SUBST(USE_LIBADLB_A)
 
 # Python is optional
-# Python
 # By default, use default location
-# USE_PYTHON should not be used programmatically
-USE_PYTHON=0
 USE_PYTHON_INCLUDE=0
 USE_PYTHON_LIB=0
 USE_PYTHON_NAME=python2.7
@@ -600,7 +596,6 @@ AC_ARG_ENABLE(python,
                    [Enable calling python]),
     [
       HAVE_PYTHON=1
-      USE_PYTHON="yes"
     ])
 
 AC_ARG_WITH(python,
@@ -608,11 +603,10 @@ AC_ARG_WITH(python,
                    [Use this python directory]),
   [
       HAVE_PYTHON=1
-      AC_CHECK_FILE(${USE_PYTHON}/include/python2.7/Python.h, [],
+      AC_CHECK_FILE(${withval}/include/python2.7/Python.h, [],
                     [AC_MSG_ERROR([Could not find python header!])])
-      USE_PYTHON=${withval}
-      USE_PYTHON_INCLUDE=${USE_PYTHON}/include
-      USE_PYTHON_LIBDIR=${USE_PYTHON}/lib
+      USE_PYTHON_INCLUDE=${withval}/include
+      USE_PYTHON_LIBDIR=${withval}/lib
       USE_PYTHON_NAME=libpython2.7.so
   ])
 
@@ -630,7 +624,7 @@ AC_ARG_WITH(python-lib,
       USE_PYTHON=${USE_PYTHON_LIB} # Copy 
     ])
 
-if [[ ${USE_PYTHON} != 0 ]]
+if [[ ${HAVE_PYTHON} == 1 ]]
 then
     USE_PYTHON_NAME=${USE_PYTHON_NAME#lib}
     USE_PYTHON_NAME=${USE_PYTHON_NAME%.so}
@@ -640,7 +634,6 @@ fi
 
 AC_DEFINE_UNQUOTED([HAVE_PYTHON],$HAVE_PYTHON,[Enables Python])
 AC_SUBST(HAVE_PYTHON)
-AC_SUBST(USE_PYTHON)
 AC_SUBST(USE_PYTHON_INCLUDE)
 AC_SUBST(USE_PYTHON_LIBDIR)
 AC_SUBST(USE_PYTHON_NAME)
@@ -1119,13 +1112,16 @@ AC_ARG_ENABLE(xlc,
               ])
 AC_SUBST(USE_XLC)
 
-m4_include([m4/ax_lib_hdf5.m4])
+m4_include([../../dev/m4/ax_lib_hdf5.m4])
 AX_LIB_HDF5()
-echo "HDF5 support: ${with_hdf5}"
-if [[ ${with_hdf5} == "no" ]]
+if [[ ${HAVE_HDF5} == 1 ]]
 then
-    echo "HDF5 is only required if you need Turbine's HDF features."
+    echo "HDF5 enabled"
+else
+    echo "HDF5 disabled"
+    echo "Note: HDF5 is only required if you need Turbine's HDF features."
 fi
+
 AC_DEFINE_UNQUOTED(DISABLE_LOG, $DISABLE_LOG, [Disables logging])
 
 ENABLE_BGP=0
@@ -1147,14 +1143,7 @@ AC_SUBST(ENABLE_DEV)
 AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 
-# We take system libraries out of arguments to the linker (#546)
-if [[ ${USE_MAC} == "no" ]]
-then
-    # This does not work on the Mac
-    ldconfig -v 2>/dev/null | grep -vP '\t' | cut -d : -f 1 > system-libs.txt
-else
-     touch system-libs.txt
-fi
+m4_include([../../dev/m4/syslibs.m4])
 
 echo
 echo "Preparing config files: please wait..."
