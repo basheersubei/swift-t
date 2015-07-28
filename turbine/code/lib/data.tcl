@@ -629,20 +629,19 @@ namespace eval turbine {
     proc multicreate_repl { varnames specs } {
       variable global_vars
 
-      # puts "inside multicreate_repl, namespace is [namespace current]"
       set n [ llength $varnames ]
       if { $n != [ llength $specs ] } {
         error "Length of names must match specs: [ llength $varnames ] vs\
               [ llength $specs ]"
       }
+      # will hold global variable ids, to be returned from multicreate_repl
+      set ids [list]
 
       # if rank 0, call multicreate with permanent true, and create globals_map
       if {[adlb::rank] == 0} {
 
-        # TODO set permanent args to true first
-
-        # call multicreate normally
-        set ids [ adlb::multicreate {*}$specs ]
+        # call multicreate_repl (same as multicreate, except sets permanent)
+        set ids [ adlb::multicreate_repl {*}$specs ]
 
         # create globals_map
         for { set i 0 } { $i < $n } { incr i } {
@@ -650,15 +649,30 @@ namespace eval turbine {
           set id [ lindex $ids $i ]
           dict append global_vars $varname $id
         }
-      # else if not rank 0, just return the ids from $global_vars dict,
-      # which maps varnames (keys) -> ids (values)
+
+        # put tasks to all workers to set globals
+        set numWorkers [ adlb::workers ]
+        # for all workers (start at 1, skip this current one)
+        for {set worker 1} {$worker < $numWorkers} {incr worker} {
+          # send targeted task to worker with payload "loadTic tic_code"
+          set putAction ""
+          foreach {varname id} $global_vars {
+            append putAction "uplevel #0 set [subst -nocommands {$varname}] $id\n"
+          }
+          # set global_vars in that worker to what it is in this worker
+          append putAction {set turbine::global_vars [dict create }
+          append putAction $global_vars
+          append putAction {]}
+
+          adlb::put $worker ${turbine::WORK_TASK} $putAction ::turbine::INT_MAX 1 HARD
+        }
+
+      # else if not rank 0, just return the ids which were already set by rank 0.
       } else {
-        set ids [ dict values [get_globals_map] ]
-        # puts "ids is $ids"
+        dict for {varname id} [get_globals_map] {
+          lappend ids $id
+        }
       }
-      puts "from multicreate_repl global_vars is $global_vars"
-      puts "from multicreate_repl globals_maps is [get_globals_map]"
-      puts "from multicreate_repl turbine::globals_maps is [turbine::get_globals_map]"
       return $ids
     }
 

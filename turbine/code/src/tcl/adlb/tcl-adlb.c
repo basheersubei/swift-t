@@ -1480,6 +1480,37 @@ ADLB_Multicreate_Cmd(ClientData cdata, Tcl_Interp *interp,
 }
 
 /**
+   usage: adlb::multicreate_repl [list of variable specs]*
+   same as multicreate, except sets permanent to true
+*/
+static int
+ADLB_Multicreate_Repl_Cmd(ClientData cdata, Tcl_Interp *interp,
+                int objc, Tcl_Obj *const objv[])
+{
+  int rc;
+  int count = objc - 1;
+  ADLB_create_spec specs[count];
+
+  for (int i = 0; i < count; i++)
+  {
+    rc = parse_variable_spec_list(interp, objv, objv[i + 1], &specs[i]);
+    specs[i].props.permanent = true;
+    TCL_CHECK(rc);
+  }
+
+  rc = ADLB_Multicreate(specs, count);
+  TCL_CONDITION(rc == ADLB_SUCCESS, "failed!");
+
+  // Build list to return
+  Tcl_Obj *tcl_ids[count];
+  for (int i = 0; i < count; i++) {
+    tcl_ids[i] = Tcl_NewADLB_ID(specs[i].id);
+  }
+  Tcl_SetObjResult(interp, Tcl_NewListObj(count, tcl_ids));
+  return TCL_OK;
+}
+
+/**
    usage: adlb::create_globals [list of variable specs]*
     Variable specs follow same format as adlb::multicreate.
     All globals have the permanent flag set so are not garbage collected.
@@ -5977,6 +6008,7 @@ tcl_adlb_init(Tcl_Interp* interp)
   COMMAND("iget",      ADLB_Iget_Cmd);
   COMMAND("create",    ADLB_Create_Cmd);
   COMMAND("multicreate",ADLB_Multicreate_Cmd);
+  COMMAND("multicreate_repl",ADLB_Multicreate_Repl_Cmd);
   COMMAND("create_globals",ADLB_Create_Globals_Cmd);
   COMMAND("locate",    ADLB_Locate_Cmd);
   COMMAND("exists",    ADLB_Exists_Cmd);
