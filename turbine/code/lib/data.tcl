@@ -614,8 +614,55 @@ namespace eval turbine {
       variable global_vars
       return $global_vars
     }
-}
 
+
+    # usage: turbine::multicreate_repl <usernames> <specs>
+    # same input args as turbine::declare_globals
+    #
+    # if rank 0, behaves just as multicreate, except uses permanent true
+    # and creates globals_map.
+    # else, it returns IDs from $globals_map.
+    #
+    # this is used in the Turbine REPL to ensure that globals are created on
+    # rank 0 (the REPL worker), and the other ranks get references to those TDs
+    # without changing how the tic code looks like.
+    proc multicreate_repl { varnames specs } {
+      variable global_vars
+
+      # puts "inside multicreate_repl, namespace is [namespace current]"
+      set n [ llength $varnames ]
+      if { $n != [ llength $specs ] } {
+        error "Length of names must match specs: [ llength $varnames ] vs\
+              [ llength $specs ]"
+      }
+
+      # if rank 0, call multicreate with permanent true, and create globals_map
+      if {[adlb::rank] == 0} {
+
+        # TODO set permanent args to true first
+
+        # call multicreate normally
+        set ids [ adlb::multicreate {*}$specs ]
+
+        # create globals_map
+        for { set i 0 } { $i < $n } { incr i } {
+          set varname [ lindex $varnames $i ]
+          set id [ lindex $ids $i ]
+          dict append global_vars $varname $id
+        }
+      # else if not rank 0, just return the ids from $global_vars dict,
+      # which maps varnames (keys) -> ids (values)
+      } else {
+        set ids [ dict values [get_globals_map] ]
+        # puts "ids is $ids"
+      }
+      puts "from multicreate_repl global_vars is $global_vars"
+      puts "from multicreate_repl globals_maps is [get_globals_map]"
+      puts "from multicreate_repl turbine::globals_maps is [turbine::get_globals_map]"
+      return $ids
+    }
+
+}
 # Local Variables:
 # mode: tcl
 # tcl-indent-level: 4
