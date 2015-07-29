@@ -643,11 +643,11 @@ namespace eval turbine {
         # call multicreate_repl (same as multicreate, except sets permanent)
         set ids [ adlb::multicreate_repl {*}$specs ]
 
-        # create globals_map
+        # create globals_map using existing global_vars
         for { set i 0 } { $i < $n } { incr i } {
           set varname [ lindex $varnames $i ]
           set id [ lindex $ids $i ]
-          dict append global_vars $varname $id
+          dict set global_vars $varname $id
         }
 
         # put tasks to all workers to set globals
@@ -660,10 +660,19 @@ namespace eval turbine {
             append putAction "uplevel #0 set [subst -nocommands {$varname}] $id\n"
           }
           # set global_vars in that worker to what it is in this worker
-          append putAction {set turbine::global_vars [dict create }
+          # create temp dict (containing globals in this script)
+          append putAction {set tempGlobalVars [dict create }
           append putAction $global_vars
           append putAction {]}
+          append putAction "\n"
 
+          # append temp dict key-values to global_vars (contains 
+          # globals from all previous scripts)
+          append putAction "dict for {varname id} "
+          append putAction {$tempGlobalVars}
+          append putAction " {dict set turbine::global_vars "
+          append putAction {$varname $id}
+          append putAction "}"
           adlb::put $worker ${turbine::WORK_TASK} $putAction ::turbine::INT_MAX 1 HARD
         }
 
