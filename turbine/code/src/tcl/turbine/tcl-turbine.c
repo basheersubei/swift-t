@@ -41,6 +41,7 @@
 
 #include <stdint.h>
 #include <inttypes.h>
+#include <limits.h>
 
 #include <tcl.h>
 
@@ -272,6 +273,10 @@ set_namespace_constants(Tcl_Interp* interp)
         TURBINE_ADLB_WORK_TYPE_WORK);
   turbine_tcl_set_integer(interp, "::turbine::LOCAL",
         TURBINE_ADLB_WORK_TYPE_LOCAL);
+
+
+  turbine_tcl_set_integer(interp, "::turbine::INT_MAX",
+        INT_MAX);
 
   turbine_tcl_set_string(interp, "::turbine::NOOP_EXEC_NAME",
                  NOOP_EXECUTOR_NAME);
