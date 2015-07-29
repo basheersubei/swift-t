@@ -91,6 +91,7 @@ class Turbine {
 
   private static final Token ALLOCATE_CUSTOM = turbFn("allocate_custom");
   private static final Token MULTICREATE = adlbFn("multicreate");
+  private static final Token MULTICREATE_REPL = turbFn("multicreate_repl");
   private static final Token DECLARE_GLOBALS = turbFn("declare_globals");
   private static final Token MAKE_FILE_TDS = turbFn("make_file_tds");
 
@@ -1655,6 +1656,7 @@ class Turbine {
 
     return lassign(multicreate(batched), batchedVarNames);
   }
+  
 
   private static Square multicreate(List<TclList> batched) {
     return Square.fnCall(MULTICREATE, batched);
@@ -1674,6 +1676,23 @@ class Turbine {
                                       List<TclList> parameters) {
     ;
     return Square.fnCall(DECLARE_GLOBALS,
+        new TclList(TclString.makeList(varNames, true)),
+        new TclList(parameters));
+  }
+
+  public static TclTree batchDeclareRepl(List<String> varNames,
+      List<TclList> parameters) {
+    assert(varNames.size() == parameters.size());
+    if (varNames.size() == 0) {
+      return new Sequence();
+    }
+
+    return lassign(createRepl(varNames, parameters), varNames);
+  }
+
+  private static Square createRepl(List<String> varNames,
+                                      List<TclList> parameters) {
+    return Square.fnCall(MULTICREATE_REPL,
         new TclList(TclString.makeList(varNames, true)),
         new TclList(parameters));
   }
