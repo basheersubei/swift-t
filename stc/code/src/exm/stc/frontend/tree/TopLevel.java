@@ -21,6 +21,7 @@ public class TopLevel {
       case ExMParser.DEFINE_NEW_TYPE:
       case ExMParser.TYPEDEF:
       case ExMParser.GLOBAL_CONST:
+      case ExMParser.EXTERN:
       case ExMParser.PRAGMA:
       case ExMParser.EOF:
         return true;
@@ -48,6 +49,7 @@ public class TopLevel {
       case ExMParser.WAIT_DEEP_STATEMENT:
       case ExMParser.UPDATE:
       case ExMParser.STATEMENT_CHAIN:
+      case ExMParser.EXTERN:
         return true;
       default:
         return false;

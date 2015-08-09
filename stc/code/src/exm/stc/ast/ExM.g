@@ -192,6 +192,7 @@ real_stmt:
         (function_definition)
     |   (new_type_definition)
     |   (global_const_definition)
+    |   (extern_statement)
     |   (import_statement)
     |   (pragma_stmt)
     |   (stmt_chain)
@@ -240,6 +241,12 @@ import_statement:
             import_path -> ^( IMPORT import_path ) |
             STRING -> ^( IMPORT STRING ) ) SEMICOLON
     ;
+    
+extern_statement:
+        EXTERN t=type_prefix v=variable SEMICOLON ->
+        ^( EXTERN $t $v )
+    ;
+        
 
 // Identifier path: separated by full stops
 import_path:
@@ -835,6 +842,7 @@ TYPE:  'type';
 TYPEDEF:  'typedef';
 IMPORT: 'import';
 PRAGMA: 'pragma';
+EXTERN: 'extern';
 
 STDIN: 'stdin';
 STDOUT: 'stdout';

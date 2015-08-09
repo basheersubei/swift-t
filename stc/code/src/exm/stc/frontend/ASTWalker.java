@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// TODO remove this
+import java.lang.System;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -336,6 +339,10 @@ public class ASTWalker {
 
       case ExMParser.PRAGMA:
         pragmaTopLevel(context, stmt);
+        break;
+        
+      case ExMParser.EXTERN:
+        extern(context, stmt);
         break;
 
       case ExMParser.EOF:
@@ -2720,6 +2727,12 @@ public class ASTWalker {
         + newType.toString());
   }
 
+  private void extern(Context context, SwiftAST tree) {  
+    assert(tree.getType() == ExMParser.EXTERN);
+//    assert(tree.getChildCount() == 0);
+    System.out.println("holy monkey, an extern() was triggered!");
+  }
+  
   private void globalConst(Context context, SwiftAST tree)
         throws UserException {
     assert(tree.getType() == ExMParser.GLOBAL_CONST);
