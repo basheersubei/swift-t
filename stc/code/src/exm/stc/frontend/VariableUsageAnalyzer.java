@@ -281,6 +281,10 @@ class VariableUsageAnalyzer {
       case ExMParser.GLOBAL_CONST:
         throw new InvalidConstructException(context, "Global constant"
             + " definitions are only allowed at top level of program");
+        
+      case ExMParser.EXTERN:
+        // do nothing
+        break;
 
       default:
         throw new STCRuntimeError

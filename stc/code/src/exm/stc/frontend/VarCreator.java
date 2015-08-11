@@ -252,6 +252,12 @@ public class VarCreator {
     initialiseVariable(context, filename);
     return filename;
   }
+  
+  public void declareExtern(Context context, Var var) 
+      throws UserException {
+    Var backendVar = VarRepr.backendVar(var);
+    backend.addExternVar(backendVar);
+  }
 
   public void assignGlobalConst(Context context, Var var, Arg val)
       throws UserException {

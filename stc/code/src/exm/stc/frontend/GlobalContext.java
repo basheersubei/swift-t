@@ -255,8 +255,8 @@ public class GlobalContext extends Context {
           DefType defType, VarProvenance provenance, boolean mapped)
                            throws DoubleDefineException {
     // Sanity checks for global scope
-    assert(defType == DefType.GLOBAL_CONST);
-    assert(scope == Alloc.GLOBAL_CONST);
+    assert(defType == DefType.GLOBAL_CONST || defType == DefType.EXTERN);
+    assert(scope == Alloc.GLOBAL_CONST || scope == Alloc.EXTERN_VAR);
     return super.declareVariable(type, name, scope, defType, provenance,
                                  mapped);
   }
@@ -293,6 +293,14 @@ public class GlobalContext extends Context {
     return declareVariable(type, name,
                    Alloc.GLOBAL_CONST, DefType.GLOBAL_CONST,
                    VarProvenance.userVar(getSourceLoc()), false);
+  }
+  
+  @Override
+  public Var createExternVar(String name, Type type)
+      throws DoubleDefineException {
+    assert(name != null);
+    return declareVariable(type, name, Alloc.EXTERN_VAR,
+        DefType.EXTERN, VarProvenance.userVar(getSourceLoc()), false);
   }
 
   @Override

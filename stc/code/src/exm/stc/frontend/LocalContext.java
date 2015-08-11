@@ -184,6 +184,12 @@ public class LocalContext extends Context {
       throws DoubleDefineException {
     return globals.createGlobalConst(name, type, makeUnique);
   }
+  
+  @Override
+  public Var createExternVar(String name, Type type)
+      throws DoubleDefineException {
+    return globals.createExternVar(name, type);
+  }
 
   @Override
   public FnID defineFunction(String name, FunctionType type,

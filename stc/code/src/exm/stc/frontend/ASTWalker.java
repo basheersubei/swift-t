@@ -705,6 +705,10 @@ public class ASTWalker {
           throw new InvalidConstructException(context, "Global constant"
               + " definitions are only allowed at top level of program");
 
+        case ExMParser.EXTERN:
+          // do nothing
+          break;
+
         case ExMParser.PRAGMA:
           throw new InvalidConstructException(context, "No pragmas"
               + " are valid within functions");
@@ -2727,10 +2731,33 @@ public class ASTWalker {
         + newType.toString());
   }
 
-  private void extern(Context context, SwiftAST tree) {  
+  /** AST for extern statement looks like:
+   * 
+   *          EXTERN
+   *         /      \
+   *    type     DECLARE_VARIABLE_REST
+   *                 /
+   *              VARIABLE
+   *              /
+   *          <varname>
+   */
+  private void extern(Context context, SwiftAST tree)
+      throws UserException {  
     assert(tree.getType() == ExMParser.EXTERN);
-//    assert(tree.getChildCount() == 0);
-    System.out.println("holy monkey, an extern() was triggered!");
+    assert(tree.getChildCount() == 2);
+    SwiftAST varTree = tree;
+
+    VariableDeclaration vd = VariableDeclaration.fromExtern(context, varTree);
+    assert(vd.count() == 1);
+    VariableDescriptor vDesc = vd.getVar(0);
+    if (vDesc.getMappingExpr() != null) {
+      throw new UserException(context, "Can't have mapped global constant");
+    }
+    
+    Var v = context.createExternVar(vDesc.getName(), vDesc.getType());
+    assert(v.storage() == Alloc.EXTERN_VAR);
+    
+    varCreator.declareExtern(context, v);
   }
   
   private void globalConst(Context context, SwiftAST tree)

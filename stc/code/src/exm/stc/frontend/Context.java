@@ -576,6 +576,9 @@ public abstract class Context {
   public abstract Var createGlobalConst(String name, Type type,
                               boolean makeUnique) throws DoubleDefineException;
 
+  public abstract Var createExternVar(String name, Type type)
+      throws DoubleDefineException;
+
   @Override
   public String toString() {
     StackLite<Context> cxs = new StackLite<Context>();

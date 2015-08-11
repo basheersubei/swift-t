@@ -115,6 +115,13 @@ public interface CompilerBackend {
   public void addGlobalConst(Var var, Arg val);
 
   /**
+   * Add a global extern variable. Does not allocate, only declares.
+   * Called before any functions or executable code is generated.
+   * @param var the variable name
+   */
+  public void addExternVar(VarDecl vd);
+
+  /**
    * Declare all writable global variable.
    *
    * Called once before any functions or executable code is generated.

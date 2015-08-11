@@ -930,6 +930,10 @@ public class STCMiddleEnd {
     assert(val.isConst());
     program.constants().add(var, val);
   }
+  
+  public void addExternVar(Var var) {
+    program.externs().addVariable(var);
+  }
 
   public void initScalarUpdateable(Var updateable, Arg val) {
     assert(Types.isPrimUpdateable(updateable));

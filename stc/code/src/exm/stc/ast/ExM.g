@@ -244,7 +244,7 @@ import_statement:
     
 extern_statement:
         EXTERN t=type_prefix v=variable SEMICOLON ->
-        ^( EXTERN $t $v )
+        ^( EXTERN $t  ^( DECLARE_VARIABLE_REST $v))
     ;
         
 

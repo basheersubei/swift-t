@@ -82,6 +82,7 @@ import exm.stc.common.lang.WrappedForeignFunction;
 import exm.stc.common.util.Pair;
 import exm.stc.common.util.StackLite;
 import exm.stc.common.util.TernaryLogic.Ternary;
+import exm.stc.ic.tree.ICTree.ExternVars;
 import exm.stc.ic.tree.TurbineOp.RefCountOp.RCDir;
 import exm.stc.tclbackend.TclTemplateProcessor.TemplateArg;
 import exm.stc.tclbackend.Turbine.CacheMode;
@@ -289,6 +290,7 @@ public class TurbineGenerator implements CompilerBackend {
               = new ArrayList<Pair<Integer, DebugSymbolData>>();
 
   private final List<VarDecl> globalVars = new ArrayList<VarDecl>();
+  private final List<VarDecl> externVars = new ArrayList<VarDecl>();
 
   public TurbineGenerator(Logger logger, String timestamp)
   {
@@ -2220,6 +2222,14 @@ public class TurbineGenerator implements CompilerBackend {
     point.add(proc);
     s.add(Turbine.turbineLog("enter function: " + id));
 
+    // if this is swift:main (aka entry function), add extern vars
+    if(isEntryPoint) {
+      for (VarDecl vd: externVars) {
+        String varName = prefixVar(vd.var);
+        s.add(Turbine.makeTCLGlobal(varName));
+      }
+    }
+    
     pointPush(s);
     functionStack.push(id);
   }
@@ -3147,6 +3157,11 @@ public class TurbineGenerator implements CompilerBackend {
     }
     pointPop(); // inner proc body
   }
+  
+  @Override
+  public void addExternVar(VarDecl vd) {
+    externVars.add(vd);
+  }
 
   @Override
   public void addGlobalConst(Var var, Arg val) {
@@ -3190,7 +3205,7 @@ public class TurbineGenerator implements CompilerBackend {
   public void declareGlobalVars(List<VarDecl> vars) {
     this.globalVars.addAll(vars);
   }
-
+  
   private Sequence initGlobalVars() {
     List<String> varNames = new ArrayList<String>();
     List<TclList> createArgs = new ArrayList<TclList>();

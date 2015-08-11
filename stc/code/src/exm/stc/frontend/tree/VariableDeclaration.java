@@ -124,6 +124,23 @@ public class VariableDeclaration {
     Type varType = TypeTree.applyArrayMarkers(context, arrMarkers, baseType);
     return new VariableDescriptor(varType, varName, mappingExpr);
   }
+  
+  public static VariableDeclaration fromExtern(
+        Context context, SwiftAST tree)
+      throws UserException {
+    assert(tree.getType() == ExMParser.EXTERN);
+    assert(tree.getChildCount() <= 2);
+    
+    VariableDeclaration res = new VariableDeclaration();
+
+    SwiftAST typeTree = tree.child(0);
+    SwiftAST nameTree = tree.child(1).child(0).child(0);
+    Type varType = TypeTree.extractTypePrefix(context, typeTree);
+    String varName = nameTree.getText();
+    VariableDescriptor vDesc = new VariableDescriptor(varType, varName, null);
+    res.addVar(vDesc, tree);
+    return res;
+  }
 
   public static class VariableDescriptor {
     private final Type type;

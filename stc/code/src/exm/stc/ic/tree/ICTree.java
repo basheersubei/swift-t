@@ -99,7 +99,8 @@ public class ICTree {
     private final GlobalConstants constants = new GlobalConstants();
 
     private final GlobalVars globalVars = new GlobalVars();
-
+    private final ExternVars externVars = new ExternVars();
+    
     private final ForeignFunctions foreignFunctions;
 
     private final ArrayList<Function> functions = new ArrayList<Function>();
@@ -165,6 +166,10 @@ public class ICTree {
       logger.debug("Generating global constants");
       constants.generate(logger, gen);
       logger.debug("Done generating global constants");
+      
+      logger.debug("Generating extern variables");
+      externVars.generate(logger, gen);
+      logger.debug("Done generating extern variables");
 
       logger.debug("Generating global variables");
       globalVars.generate(logger, gen);
@@ -298,6 +303,10 @@ public class ICTree {
 
     public GlobalConstants constants() {
       return constants;
+    }
+    
+    public ExternVars externs() {
+      return externVars;
     }
 
     public GlobalVars globalVars() {
@@ -638,6 +647,24 @@ public class ICTree {
     }
   }
 
+  public static class ExternVars extends Variables {
+    
+    @Override
+    public void addVariable(Var var) {
+      assert(var.storage() == Alloc.EXTERN_VAR);
+      assert(var.defType() == DefType.EXTERN);
+
+      super.addVariable(var);
+    }
+    
+    public void generate(Logger logger, CompilerBackend gen) {
+      for (VarDecl vd: getDeclarations()) {
+        gen.addExternVar(vd);
+      }
+    }
+    
+  }
+  
   public static class GlobalVars extends Variables {
 
     @Override
