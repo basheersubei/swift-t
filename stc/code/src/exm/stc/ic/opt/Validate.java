@@ -31,6 +31,7 @@ import exm.stc.common.lang.ExecContext;
 import exm.stc.common.lang.ExecTarget;
 import exm.stc.common.lang.Semantics;
 import exm.stc.common.lang.Var;
+import exm.stc.common.lang.Var.DefType;
 import exm.stc.common.util.HierarchicalSet;
 import exm.stc.ic.opt.TreeWalk.TreeWalker;
 import exm.stc.ic.tree.ICContinuations.ContVarDefType;
@@ -229,7 +230,7 @@ public class Validate implements OptimizerPass {
   private void checkVarReferencesInstruction(Function f,
           Map<String, Var> declared, Set<Var> unavailable, Instruction inst) {
     for (Arg i: inst.getInputs()) {
-      if (i.isVar()) {
+      if (i.isVar() && i.getVar().defType() != DefType.EXTERN) {
         checkVarReference(f, declared, unavailable, i.getVar(), inst);
       }
     }

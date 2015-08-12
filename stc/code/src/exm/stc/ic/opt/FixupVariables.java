@@ -32,6 +32,7 @@ import exm.stc.common.lang.RefCounting;
 import exm.stc.common.lang.Types;
 import exm.stc.common.lang.Var;
 import exm.stc.common.lang.Var.Alloc;
+import exm.stc.common.lang.Var.DefType;
 import exm.stc.common.util.HierarchicalSet;
 import exm.stc.common.util.Pair;
 import exm.stc.common.util.Sets;
@@ -147,10 +148,21 @@ public class FixupVariables implements OptimizerPass {
         res.removeWritten(v);
       }
     }
-
+    
     if (res.read.size() > 0) {
-      throw new STCRuntimeError("Reference in IC function "
-          + fn.id() + " to undefined variables " + res.read.toString());
+      // if variable is extern, don't throw error if undefined
+      // TODO find a better way since this is dangerous
+      boolean hasExtern = false;
+      for (Var v: res.read) {
+        if (v.defType() == DefType.EXTERN) {
+          hasExtern = true;
+        }
+      }
+      
+      if (!hasExtern) {
+        throw new STCRuntimeError("Reference in IC function "
+            + fn.id() + " to undefined variables " + res.read.toString());
+      }
     }
 
     if (res.written.size() > 0) {
