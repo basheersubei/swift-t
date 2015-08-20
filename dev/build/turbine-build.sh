@@ -131,17 +131,33 @@ if (( ENABLE_MKSTATIC_CRC )); then
   EXTRA_ARGS+=" --enable-mkstatic-crc-check"
 fi
 
+if [ -z "$WITH_HDF5" ]; then
+  EXTRA_ARGS+=" --with-hdf5=no"
+else
+  EXTRA_ARGS+=" --with-hdf5=$WITH_HDF5"
+fi
+
 if (( CONFIGURE )); then
   ./configure --with-adlb=${LB_INSTALL} \
               ${CRAY_ARGS} \
               --with-c-utils=${C_UTILS_INSTALL} \
               --prefix=${TURBINE_INSTALL} \
-              ${EXTRA_ARGS}
-#             --disable-log
+              ${EXTRA_ARGS} \
+              --disable-log
 fi
 
 if (( MAKE_CLEAN )); then
   make clean
 fi
-make -j ${MAKE_PARALLELISM}
+if ! make -j ${MAKE_PARALLELISM}
+then
+  rm deps_contents.txt
+  echo
+  echo Make failed.  The following may be useful:
+  echo
+  set -x
+  make check_includes
+  exit 1
+fi
+
 make install
