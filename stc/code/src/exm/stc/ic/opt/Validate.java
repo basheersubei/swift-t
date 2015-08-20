@@ -223,7 +223,9 @@ public class Validate implements OptimizerPass {
   private void checkVarReferencesCont(Function f, Map<String, Var> declared,
                               Set<Var> unavailable, Continuation c) {
     for (Var v: c.requiredVars(false)) {
-      checkVarReference(f, declared, unavailable, v, c.getType());
+      if (v.defType() != DefType.EXTERN) {
+        checkVarReference(f, declared, unavailable, v, c.getType());
+      }
     }
   }
 
@@ -235,12 +237,17 @@ public class Validate implements OptimizerPass {
       }
     }
     for (Var o: inst.getOutputs()) {
-      checkVarReference(f, declared, unavailable, o, inst);
+      if (o.defType() != DefType.EXTERN) {
+        checkVarReference(f, declared, unavailable, o, inst);
+      }
     }
   }
 
   private void checkVarReference(Function f, Map<String, Var> declared,
               Set<Var> unavailable, Var referencedVar, Object context) {
+    if(referencedVar.defType() == DefType.EXTERN) {
+      return;
+    }
     assert(declared.containsKey(referencedVar.name())): referencedVar +
                               " not among declared vars in scope: " + declared;
     Var declaredVar = declared.get(referencedVar.name());

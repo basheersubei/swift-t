@@ -511,7 +511,7 @@ public class FixupVariables implements OptimizerPass {
     // Rebuild passed in vars
     List<PassedVar> passedIn = new ArrayList<PassedVar>();
     for (Var needed: inner.allNeeded()) {
-      if (!visibleVars.contains(needed)) {
+      if (!visibleVars.contains(needed) && needed.defType() != DefType.EXTERN) {
         throw new STCRuntimeError("Variable " + needed
             + " should have been " + "visible but wasn't in "
             + function.id());
